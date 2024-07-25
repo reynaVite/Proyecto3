@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Predicción</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 50px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .color {
+            background-color: #007bff;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        h3 {
+            text-align: center;
+            color: #007bff;
+        }
+        form {
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        select, input[type="submit"] {
+            width: calc(100% - 12px);
+            padding: 6px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        input[type="submit"]:hover {
+            background-color: #007bff;
+        }
+        #resultado {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .error {
+            color: #f00;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Formulario de predicción</h1>
+        <form id="formulario" onsubmit="clasificarEficiencia(event)">
+            <label for="habilidad_lectura">Habilidad de lectura:</label>
+            <select id="habilidad_lectura" name="habilidad_lectura" required>
+                <option value="Sí">Sí</option>
+                <option value="No">No</option>
+            </select><br>
+
+            <label for="habilidad_escritura">Habilidad de escritura:</label>
+            <select id="habilidad_escritura" name="habilidad_escritura" required>
+                <option value="Sí">Sí</option>
+                <option value="No">No</option>
+            </select><br>
+
+            <label for="habilidad_matematicas">Habilidad de matemáticas:</label>
+            <select id="habilidad_matematicas" name="habilidad_matematicas" required>
+                <option value="Sí">Sí</option>
+                <option value="No">No</option>
+            </select><br>
+
+            <label for="participacion">Participación:</label>
+            <select id="participacion" name="participacion" required>
+                <option value="Sí">Sí</option>
+                <option value="No">No</option>
+            </select><br>
+
+            <label for="comportamiento">Comportamiento:</label>
+            <select id="comportamiento" name="comportamiento" required>
+                <option value="Bueno">Bueno</option>
+                <option value="Malo">Malo</option>
+            </select><br>
+
+            <input type="submit" value="Enviar">
+        </form>
+        <h3>Resultado de la predicción</h3>
+        <p id="resultado"></p>
+    </div>
+    <script>
+        function clasificarEficiencia(event) {
+            event.preventDefault();
+            const habilidad_lectura = document.getElementById('habilidad_lectura').value;
+            const habilidad_escritura = document.getElementById('habilidad_escritura').value;
+            const habilidad_matematicas = document.getElementById('habilidad_matematicas').value;
+            const participacion = document.getElementById('participacion').value;
+            const comportamiento = document.getElementById('comportamiento').value;
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `habilidad_lectura=${habilidad_lectura}&habilidad_escritura=${habilidad_escritura}&habilidad_matematicas=${habilidad_matematicas}&participacion=${participacion}&comportamiento=${comportamiento}`,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('resultado').innerHTML = '<span class="error">Error: ' + data.error + '</span>';
+                } else {
+                    // Interpretar el resultado
+                    let mensaje;
+                    switch (data.prediction) {
+                        case 0:
+                            mensaje = 'El estudiante presenta rezago académico.';
+                            break;
+                        case 1:
+                            mensaje = 'El estudiante no presenta rezago académico.';
+                            break;
+                        default:
+                            mensaje = 'Resultado desconocido.';
+                            break;
+                    }
+                    document.getElementById('resultado').innerText = mensaje;
+                }
+            })
+            .catch(error => {
+                document.getElementById('resultado').innerHTML = '<span class="error">Error en la solicitud.</span>';
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
